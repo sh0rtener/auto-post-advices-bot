@@ -19,3 +19,4 @@ ServiceProvider provider = builder.BuildServiceProvider();
 
 var context = provider.GetRequiredService<AppDbContext>();
 context.Database.Migrate();
+context.Dispose();

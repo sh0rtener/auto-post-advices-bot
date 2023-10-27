@@ -7,8 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Autoposter.DiscordBot.Modules.ServerModules
 {
-    [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
-    [RequireOwner(Group = "Permission")]
+    [RequireRole(roleName: "admin")]
     public class ServerModule : InteractionModuleBase<SocketInteractionContext>
     {
         public InteractionService? Commands { get; set; }

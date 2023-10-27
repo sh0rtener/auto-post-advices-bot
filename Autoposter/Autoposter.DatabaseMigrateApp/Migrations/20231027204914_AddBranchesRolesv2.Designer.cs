@@ -3,6 +3,7 @@ using System;
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Autoposter.DatabaseMigrateApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231027204914_AddBranchesRolesv2")]
+    partial class AddBranchesRolesv2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,18 +87,18 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
                     b.Property<decimal>("RoleId")
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("role_id");
 
-                    b.Property<Guid?>("branch_id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("branch_id");
-
                     b.HasKey("Id")
                         .HasName("pk_branches_roles");
 
-                    b.HasIndex("branch_id")
+                    b.HasIndex("BranchId")
                         .HasDatabaseName("ix_branches_roles_branch_id");
 
                     b.ToTable("branches_roles", (string)null);
@@ -199,16 +202,13 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BranchesRoles", b =>
                 {
                     b.HasOne("Autoposter.DomainLayer.Entities.Autoposter.Branch", "Branch")
-                        .WithMany("BranchRoles")
-                        .HasForeignKey("branch_id")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_branches_roles_branches_branch_id");
 
                     b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.Branch", b =>
-                {
-                    b.Navigation("BranchRoles");
                 });
 #pragma warning restore 612, 618
         }

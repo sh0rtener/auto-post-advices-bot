@@ -3,6 +3,7 @@ using System;
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Autoposter.DatabaseMigrateApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231027205108_AddBranchesRolesV3")]
+    partial class AddBranchesRolesV3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -199,16 +202,11 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BranchesRoles", b =>
                 {
                     b.HasOne("Autoposter.DomainLayer.Entities.Autoposter.Branch", "Branch")
-                        .WithMany("BranchRoles")
+                        .WithMany()
                         .HasForeignKey("branch_id")
                         .HasConstraintName("fk_branches_roles_branches_branch_id");
 
                     b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.Branch", b =>
-                {
-                    b.Navigation("BranchRoles");
                 });
 #pragma warning restore 612, 618
         }

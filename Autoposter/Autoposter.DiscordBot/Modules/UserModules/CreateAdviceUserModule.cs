@@ -42,7 +42,9 @@ namespace Autoposter.DiscordBot.Modules.UserModules
         [ModalInteraction("advice_model")]
         public async Task MakeAdviceResponseAsync(CreateAdviceModel model)
         {
-            if (await _roleValidator.Validate(((SocketGuildUser)Context.User).Roles))
+            var userRoles = Context.User.MutualGuilds.FirstOrDefault()!
+                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+            if (await _roleValidator.Validate(userRoles))
             {
                 await RespondAsync("Нет доступа!", ephemeral: true);
                 return;
@@ -70,7 +72,12 @@ namespace Autoposter.DiscordBot.Modules.UserModules
 
             await _postService.AddAsync(model, Context);
 
-            List<Branch> branches = await _context.Branches.ToListAsync();
+            List<Branch> branches = await _context.Branches.Include(x => x.BranchRoles).ToListAsync();
+            branches.RemoveAll(x => 
+                x.BranchRoles.Select(x => x.RoleId).Intersect(userRoles.Select(x => x.Id)).Count() != 
+                x.BranchRoles.Select(x => x.RoleId).Count()
+            );
+
             if (await IsCollectionIsEmpty(branches)) return;
 
             SelectMenuBuilder selectBranch = new SelectMenuBuilder()

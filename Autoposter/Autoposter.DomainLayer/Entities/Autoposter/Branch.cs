@@ -4,5 +4,6 @@
     {
         public string? Name { get; set; }
         public ulong BranchId { get; set; }
+        public ICollection<BranchesRoles> BranchRoles { get; } = new List<BranchesRoles>();
     }
 }

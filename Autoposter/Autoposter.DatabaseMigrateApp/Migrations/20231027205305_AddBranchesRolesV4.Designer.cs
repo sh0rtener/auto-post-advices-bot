@@ -3,6 +3,7 @@ using System;
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Autoposter.DatabaseMigrateApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231027205305_AddBranchesRolesV4")]
+    partial class AddBranchesRolesV4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,6 +115,10 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .HasColumnType("text")
                         .HasColumnName("branch_id");
 
+                    b.Property<Guid?>("BranchId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id1");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -150,6 +157,9 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_posts");
+
+                    b.HasIndex("BranchId1")
+                        .HasDatabaseName("ix_posts_branch_id1");
 
                     b.ToTable("posts", (string)null);
                 });
@@ -199,16 +209,24 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BranchesRoles", b =>
                 {
                     b.HasOne("Autoposter.DomainLayer.Entities.Autoposter.Branch", "Branch")
-                        .WithMany("BranchRoles")
+                        .WithMany()
                         .HasForeignKey("branch_id")
                         .HasConstraintName("fk_branches_roles_branches_branch_id");
 
                     b.Navigation("Branch");
                 });
 
+            modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.Post", b =>
+                {
+                    b.HasOne("Autoposter.DomainLayer.Entities.Autoposter.Branch", null)
+                        .WithMany("Posts")
+                        .HasForeignKey("BranchId1")
+                        .HasConstraintName("fk_posts_branches_branch_id1");
+                });
+
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.Branch", b =>
                 {
-                    b.Navigation("BranchRoles");
+                    b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
         }
