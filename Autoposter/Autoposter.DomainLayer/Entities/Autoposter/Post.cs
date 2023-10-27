@@ -2,13 +2,15 @@
 {
     public class Post : EntityBase
     {
-        public User? User { get; set; }
+        public ulong DiscordId { get; set; }
+        public string? TagName { get; set; }
+        public string? Name { get; set; }
         public string? Description { get; set; }
-        public Guid PostsServersId { get; set; }
-        public Guid PostsTagsId { get; set; }
+        public string? BranchId { get; set; }
+        public string? ServerId { get; set; }
+        public string? ImageUri { get; set; }
         public DateTime LastUpdateAt { get; set; }
-        public bool IsActive = true;
-        public PostsServers? Servers { get; set; }
-        public PostsTags? Tags { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
     }
 }
