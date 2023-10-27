@@ -11,6 +11,7 @@ namespace Autoposter.BusinessLayer.Data.EntityFramework
         public DbSet<Tag> Tags => Set<Tag>();
         public DbSet<BotSettings> BotSettings => Set<BotSettings>();
         public DbSet<BotRole> BotRoles => Set<BotRole>();
+        public DbSet<BranchRole> BranchRoles => Set<BranchRole>();
 
         public AppDbContext(DbContextOptions options) : base(options) { }
     }

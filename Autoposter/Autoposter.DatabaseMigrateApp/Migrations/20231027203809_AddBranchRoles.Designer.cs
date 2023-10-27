@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Autoposter.DiscordBot.Migrations
+namespace Autoposter.DatabaseMigrateApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231027151207_AddBotSettings")]
-    partial class AddBotSettings
+    [Migration("20231027203809_AddBranchRoles")]
+    partial class AddBranchRoles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,23 @@ namespace Autoposter.DiscordBot.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BotRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("RoleId")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("role_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_bot_roles");
+
+                    b.ToTable("bot_roles", (string)null);
+                });
 
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BotSettings", b =>
                 {
@@ -61,6 +78,23 @@ namespace Autoposter.DiscordBot.Migrations
                         .HasName("pk_branches");
 
                     b.ToTable("branches", (string)null);
+                });
+
+            modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.BranchRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("RoleId")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("role_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_branch_roles");
+
+                    b.ToTable("branch_roles", (string)null);
                 });
 
             modelBuilder.Entity("Autoposter.DomainLayer.Entities.Autoposter.Post", b =>

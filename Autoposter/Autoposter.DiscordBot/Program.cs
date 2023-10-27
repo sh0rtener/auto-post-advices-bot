@@ -86,8 +86,6 @@ class Program
             var client = services.GetRequiredService<DiscordSocketClient>();
             var commands = services.GetRequiredService<InteractionService>();
             var poster = services.GetRequiredService<AutoPoster>();
-            AppDbContext context = services.GetRequiredService<AppDbContext>();
-            await TakeMigration(context);
             _commands = commands;
             _client = client;
 
