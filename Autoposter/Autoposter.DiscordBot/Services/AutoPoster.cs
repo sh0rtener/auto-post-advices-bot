@@ -12,15 +12,18 @@ namespace Autoposter.DiscordBot.Services
         private AppDbContext? _context;
         private DiscordSocketClient? _client;
         private IConfiguration? _configuration;
+        public AutoPoster(AppDbContext context, DiscordSocketClient client)
+        {
+            _context = context;
+            _client = client;
+        }
 
-        public async Task StartPosting(AppDbContext context, DiscordSocketClient client)
+        public async Task StartPosting()
         {
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
-            _context = context;
-            _client = client;
 
             Console.WriteLine("start parsing");
             while (true)
