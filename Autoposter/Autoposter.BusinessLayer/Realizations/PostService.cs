@@ -17,11 +17,12 @@ namespace Autoposter.BusinessLayer.Realizations
             _context = context;
         }
 
-        public async Task AddAsync(CreateAdviceModel model, SocketInteractionContext context)
+        public async Task AddAsync(CreateAdviceModel model, SocketInteractionContext context, ulong guildId)
         {
             Post post = new Post()
             {
                 Id = Guid.NewGuid(),
+                GuildId = guildId,
                 DiscordId = context.User.Id,
                 TagName = context.User.Mention,
                 Name = model.Nickname,
@@ -35,11 +36,11 @@ namespace Autoposter.BusinessLayer.Realizations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int> TimeToCreate(ulong discordId, double time)
+        public async Task<int> TimeToCreate(ulong discordId, double time, ulong guildId)
         {
             Post? postOld = await _context.Posts
                 .OrderByDescending(x => x.LastUpdateAt)
-                .FirstOrDefaultAsync(x => x.DiscordId == discordId);
+                .FirstOrDefaultAsync(x => x.DiscordId == discordId && x.GuildId == guildId);
 
             if (postOld is not null)
             {
@@ -52,24 +53,24 @@ namespace Autoposter.BusinessLayer.Realizations
             return -1;
         }
 
-        public async Task<Post> GetLastByUserAsync(string discordId)
+        public async Task<Post> GetLastByUserAsync(string discordId, ulong guildId)
         {
             Post? post = await _context.Posts
                 .OrderByDescending(x => x.LastUpdateAt)
-                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(discordId));
+                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(discordId) && x.GuildId == guildId);
 
             return post!;
         }
 
-        public async Task RemoveAllByUserId(ulong discordId)
+        public async Task RemoveAllByUserId(ulong discordId, ulong guildId)
         {
-            _context.Posts.RemoveRange(await _context.Posts.Where(x => x.DiscordId == discordId).ToArrayAsync());
+            _context.Posts.RemoveRange(await _context.Posts.Where(x => x.DiscordId == discordId && x.GuildId == guildId).ToArrayAsync());
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Post post)
+        public async Task UpdateAsync(Post post, ulong guildId)
         {
-            Post? entityExist = await _context.Posts.FirstOrDefaultAsync(x => x.Id == post.Id);
+            Post? entityExist = await _context.Posts.FirstOrDefaultAsync(x => x.Id == post.Id && x.GuildId == guildId);
             if (entityExist is null)
                 throw new NullReferenceException();
 

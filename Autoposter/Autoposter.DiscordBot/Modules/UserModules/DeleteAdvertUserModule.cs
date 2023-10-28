@@ -1,4 +1,5 @@
 ﻿using Autoposter.BusinessLayer.Data.EntityFramework;
+using Autoposter.BusinessLayer.Validations;
 using Autoposter.DiscordBot.Services;
 using Discord;
 using Discord.Interactions;
@@ -12,18 +13,30 @@ namespace Autoposter.DiscordBot.Modules.UserModules
         public InteractionService? Commands { get; set; }
         private readonly AppDbContext _context;
         private InteractionHandler _handler;
+        private DiscordRoleValidator _roleValidator;
 
-        public DeleteAdvertUserModule(InteractionHandler handler, AppDbContext context)
+        public DeleteAdvertUserModule(InteractionHandler handler, AppDbContext context, DiscordRoleValidator roleValidator)
         {
             _handler = handler;
             _context = context;
+            _roleValidator = roleValidator;
         }
 
-        [RequireRole(roleName: "admin")]
         [SlashCommand("удалить-объявление-пользователя", "Позволяет администратору удалить объявление по id пользователя")]
         public async Task RemoveAdvertByAdminAsync([Summary(name: "id_пользователя")] string userId, [Summary(name: "причина")] string reason)
         {
-            _context.Posts.RemoveRange(await _context.Posts.Where(x => x.DiscordId == ulong.Parse(userId)).ToArrayAsync());
+            var guilds = Context.User.MutualGuilds.FirstOrDefault()!;
+            var userRoles = guilds
+                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+
+            if (await _roleValidator.Validate(userRoles))
+            {
+                await RespondAsync("Нет доступа!", ephemeral: true);
+                return;
+            }
+
+            _context.Posts.RemoveRange(await _context.Posts.Where(
+                x => x.DiscordId == ulong.Parse(userId) && x.GuildId == Context.Guild.Id).ToArrayAsync());
             await _context.SaveChangesAsync();
 
             await RespondAsync($"Объявление успешно удалено! ", ephemeral: true);

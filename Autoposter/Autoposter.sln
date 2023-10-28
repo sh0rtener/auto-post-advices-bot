@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.BusinessLayer", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DiscordBot", "Autoposter.DiscordBot\Autoposter.DiscordBot.csproj", "{298A20AD-9ED5-4776-9E88-999556BA18E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autoposter.DatabaseMigrateApp", "Autoposter.DatabaseMigrateApp\Autoposter.DatabaseMigrateApp.csproj", "{07495057-8406-4F77-BCCB-24595D6AE5B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DatabaseMigrateApp", "Autoposter.DatabaseMigrateApp\Autoposter.DatabaseMigrateApp.csproj", "{07495057-8406-4F77-BCCB-24595D6AE5B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

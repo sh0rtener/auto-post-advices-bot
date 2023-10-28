@@ -9,8 +9,8 @@ namespace Autoposter.DiscordBot.Services
 {
     public class AutoPoster
     {
-        private AppDbContext? _context;
-        private DiscordSocketClient? _client;
+        private AppDbContext _context;
+        private DiscordSocketClient _client;
         private IConfiguration? _configuration;
         public AutoPoster(AppDbContext context, DiscordSocketClient client)
         {
@@ -24,6 +24,9 @@ namespace Autoposter.DiscordBot.Services
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
+
+            await _context.Posts.ExecuteUpdateAsync(x => x.SetProperty(date => date.LastUpdateAt,
+                date => DateTime.UtcNow));
 
             Console.WriteLine("start parsing");
             while (true)
@@ -41,13 +44,16 @@ namespace Autoposter.DiscordBot.Services
                 .ToListAsync()
                 .GetAwaiter().GetResult();
 
-            double interval = await _context.BotSettings.Select(x => x.Interval).OrderByDescending(x => x)
-                .FirstOrDefaultAsync();
 
-            if (interval == 0) interval = double.MaxValue;
 
             foreach (Post post in posts)
             {
+                double interval = await _context.BotSettings.Where(x => x.GuildId == post.GuildId)
+                    .Select(x => x.Interval).OrderByDescending(x => x)
+                    .FirstOrDefaultAsync();
+
+                if (interval == 0) interval = double.MaxValue;
+
                 if (post.BranchId is null && post.ServerId is null && post.ImageUri is null)
                     continue;
 
@@ -70,17 +76,7 @@ namespace Autoposter.DiscordBot.Services
 
             if (channel is null) return;
 
-            ButtonBuilder acceptButton = new ButtonBuilder()
-            {
-                Label = "Написать продавцу",
-                Style = ButtonStyle.Link,
-                Url = "discord://-/users/" + post.DiscordId
-            };
-
-            ComponentBuilder components = new ComponentBuilder();
-            components.WithButton(acceptButton);
-
-            await channel!.SendMessageAsync(embed: embed, components: components.Build());
+            await channel!.SendMessageAsync(embed: embed);
 
             Post? oldPost = await _context!.Posts.FirstOrDefaultAsync(x => x.Id == post.Id);
             post.LastUpdateAt = DateTime.UtcNow;
@@ -108,13 +104,14 @@ namespace Autoposter.DiscordBot.Services
                 {
                     IconUrl = user.GetAvatarUrl(),
                     Name = user.Username,
-                    Url = "https://discord.com/users/" + post.DiscordId
                 },
                 ThumbnailUrl = user.GetAvatarUrl(),
                 Url = "https://discord.com/users/" + post.DiscordId,
                 Color = 0x0099FF,
                 Description = $"Ник: {post.Name}\nСервер: {server!.Name}\n\n" +
-                            $"Объявление торговца:\n {post.Description}\n\nАктивировать услугу: \n{branchUri}"
+                            $"Объявление торговца:\n {post.Description}\n\nАктивировать услугу: \n{branchUri}" +
+                            $"\n\nНаписать торговцу:\n {user.Mention}\n" +
+                            $"Тег текстом:\n {user.Username}"
             };
 
             embed

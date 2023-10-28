@@ -39,6 +39,7 @@ class Program
         {
             LogLevel = LogSeverity.Info,
             AlwaysDownloadUsers = true,
+            
             MessageCacheSize = 100,
             GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers | GatewayIntents.GuildBans |
             GatewayIntents.MessageContent

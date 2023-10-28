@@ -16,7 +16,7 @@ namespace Autoposter.BusinessLayer.Data.EntityFramework
         public AppDbContext(DbContextOptions options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<BranchesRoles>().HasOne(x => x.Branch).WithMany(x => x.BranchRoles);
+            modelBuilder.Entity<BranchesRoles>().HasOne(x => x.Branch).WithMany(x => x.BranchRoles).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

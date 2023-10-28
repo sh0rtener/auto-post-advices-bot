@@ -3,6 +3,7 @@ using System;
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Autoposter.DatabaseMigrateApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231028142051_AddConstraints")]
+    partial class AddConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,10 +31,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
 
                     b.Property<decimal>("RoleId")
                         .HasColumnType("numeric(20,0)")
@@ -49,10 +48,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
 
                     b.Property<int>("Interval")
                         .HasColumnType("integer")
@@ -75,10 +70,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("branch_id");
 
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
-
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
@@ -95,10 +86,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
 
                     b.Property<decimal>("RoleId")
                         .HasColumnType("numeric(20,0)")
@@ -140,10 +127,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("discord_id");
 
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
-
                     b.Property<string>("ImageUri")
                         .HasColumnType("text")
                         .HasColumnName("image_uri");
@@ -181,10 +164,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
-
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
@@ -205,10 +184,6 @@ namespace Autoposter.DatabaseMigrateApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("guild_id");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")

@@ -6,10 +6,10 @@ namespace Autoposter.BusinessLayer.Contracts
 {
     public interface IPostService
     {
-        Task AddAsync(CreateAdviceModel model, SocketInteractionContext context);
-        Task<Post> GetLastByUserAsync(string discordId);
-        Task<int> TimeToCreate(ulong discordId, double time);
-        Task UpdateAsync(Post post);
-        Task RemoveAllByUserId(ulong discordId);
+        Task AddAsync(CreateAdviceModel model, SocketInteractionContext context, ulong guildId);
+        Task<Post> GetLastByUserAsync(string discordId, ulong guildId);
+        Task<int> TimeToCreate(ulong discordId, double time, ulong guildId);
+        Task UpdateAsync(Post post, ulong guildId);
+        Task RemoveAllByUserId(ulong discordId, ulong guildId);
     }
 }
