@@ -9,6 +9,10 @@ using Autoposter.BusinessLayer.Contracts;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Autoposter.BusinessLayer.Validations;
+using Microsoft.Extensions.Hosting;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data;
 
 namespace Autoposter.DiscordBot.Modules.UserModules
 {
@@ -44,6 +48,7 @@ namespace Autoposter.DiscordBot.Modules.UserModules
         {
             var userRoles = Context.User.MutualGuilds.FirstOrDefault()!
                 .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+
             if (await _roleValidator.Validate(userRoles))
             {
                 await RespondAsync("Нет доступа!", ephemeral: true);
@@ -60,8 +65,9 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             }
 
             double timeToCreate = await _postService.TimeToCreate(Context.User.Id, interval);
+            Post post = await _postService.GetLastByUserAsync(Context.User.Id.ToString());
 
-            if (timeToCreate > 0) 
+            if (timeToCreate > 0 && (post.BranchId is not null && post.ServerId is not null && post.ImageUri is not null))
             {
                 await RespondAsync($"Вы не можете создать новое объявление. " +
                     $" Осталось {timeToCreate} минут", ephemeral: true);
@@ -72,11 +78,22 @@ namespace Autoposter.DiscordBot.Modules.UserModules
 
             await _postService.AddAsync(model, Context);
 
-            List<Branch> branches = await _context.Branches.Include(x => x.BranchRoles).ToListAsync();
-            branches.RemoveAll(x => 
-                x.BranchRoles.Select(x => x.RoleId).Intersect(userRoles.Select(x => x.Id)).Count() != 
-                x.BranchRoles.Select(x => x.RoleId).Count()
-            );
+            List<Branch> branches = await _context.Branches.AsNoTracking().Include(x => x.BranchRoles).ToListAsync();
+
+            List<Branch> branchesToRemove = new List<Branch>();
+
+            foreach (Branch branch in branches)
+            {
+                bool isContain = false;
+                foreach (ulong role in branch.BranchRoles.Select(x => x.RoleId))
+                {
+                    if (userRoles.Select(x => x.Id).Contains(role)) { isContain = true; break; }
+                }
+
+                if (!isContain && branch.BranchRoles.Count != 0) branchesToRemove.Add(branch);
+            }
+
+            branches = branches.Except(branchesToRemove).ToList();
 
             if (await IsCollectionIsEmpty(branches)) return;
 
@@ -97,7 +114,9 @@ namespace Autoposter.DiscordBot.Modules.UserModules
         [ComponentInteraction("select-branch")]
         public async Task MakeAdviceSelectBranchResponseAsync(string[] selections)
         {
-            if (await _roleValidator.Validate(((SocketGuildUser)Context.User).Roles))
+            var userRoles = Context.User.MutualGuilds.FirstOrDefault()!
+                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+            if (await _roleValidator.Validate(userRoles))
             {
                 await RespondAsync("Нет доступа!", ephemeral: true);
                 return;
@@ -125,13 +144,15 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             ComponentBuilder components = new ComponentBuilder();
             components.WithSelectMenu(selectBranch);
 
-            await RespondAsync($"Выберите сервер для постинга: ", components: components.Build(), ephemeral: true);
+            await RespondAsync($"Укажите ваш сервер: ", components: components.Build(), ephemeral: true);
         }
 
         [ComponentInteraction("select-server")]
         public async Task MakeAdviceSelectServerResponseAsync(string[] selections)
         {
-            if (await _roleValidator.Validate(((SocketGuildUser)Context.User).Roles))
+            var userRoles = Context.User.MutualGuilds.FirstOrDefault()!
+                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+            if (await _roleValidator.Validate(userRoles))
             {
                 await RespondAsync("Нет доступа!", ephemeral: true);
                 return;
@@ -147,7 +168,7 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             ButtonBuilder acceptButton = new ButtonBuilder()
             {
                 CustomId = "accept-photo",
-                Label = "Accept",
+                Label = "Отправить изображение",
                 Style = ButtonStyle.Success
             };
             ComponentBuilder components = new ComponentBuilder();
@@ -159,7 +180,9 @@ namespace Autoposter.DiscordBot.Modules.UserModules
         [ComponentInteraction("accept-photo")]
         public async Task MakeAdviceLoadImageResponseAsync()
         {
-            if (await _roleValidator.Validate(((SocketGuildUser)Context.User).Roles))
+            var userRoles = Context.User.MutualGuilds.FirstOrDefault()!
+                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+            if (await _roleValidator.Validate(userRoles))
             {
                 await RespondAsync("Нет доступа!", ephemeral: true);
                 return;
@@ -173,6 +196,11 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             var message = messages.First(x => x.Author.Id == Context.User.Id && x.Attachments is not null);
             var image = message.Attachments.First();
 
+            if (image is null)
+            {
+                await RespondAsync("Ошибка! Вы обязательно должны загрузить фото!", ephemeral: true);
+                return;
+            }
 
             post!.ImageUri = image.Url;
             post!.LastUpdateAt = DateTime.UtcNow;
@@ -184,6 +212,16 @@ namespace Autoposter.DiscordBot.Modules.UserModules
                 embed: await GetPreviewEmbed(post));
             await RespondAsync($"Обьявление успешно добавлено! ", ephemeral: true);
             await ShareCreatedPost(post);
+        }
+
+
+        [SlashCommand("удалить-объявление", "Позволяет пользователю удалить объявление")]
+        public async Task RemoveAdvertAsync()
+        {
+            _context.Posts.RemoveRange(await _context.Posts.Where(x => x.DiscordId == Context.User.Id).ToArrayAsync());
+            await _context.SaveChangesAsync();
+
+            await RespondAsync($"Объявление успешно удалено! ", ephemeral: true);
         }
 
         private async Task<bool> IsCollectionIsEmpty<T>(List<T> collection)
@@ -205,7 +243,7 @@ namespace Autoposter.DiscordBot.Modules.UserModules
 
         private async Task<Embed> GetPreviewEmbed(Post post)
         {
-            SocketGuildUser user = Context.Guild.GetUser(post.DiscordId);
+            SocketUser user = Context.Client.GetUser(post.DiscordId);
             Server? server = await _context.Servers.FirstOrDefaultAsync(x => x.Id == Guid.Parse(post.ServerId!));
             Uri branchUri = new Uri($"https://discord.com/channels/{Context.Channel.Id}/{post.BranchId}");
 
@@ -215,7 +253,7 @@ namespace Autoposter.DiscordBot.Modules.UserModules
                 Author = new EmbedAuthorBuilder()
                 {
                     IconUrl = user.GetAvatarUrl(),
-                    Name = user.Nickname,
+                    Name = user.Username,
                     Url = "https://discord.com/users/" + post.DiscordId
                 },
                 ThumbnailUrl = user.GetAvatarUrl(),

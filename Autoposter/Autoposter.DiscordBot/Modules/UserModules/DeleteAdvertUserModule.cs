@@ -4,12 +4,9 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Autoposter.DiscordBot.Modules.UserModules
 {
-    [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
-    [RequireOwner(Group = "Permission")]
     public class DeleteAdvertUserModule : InteractionModuleBase<SocketInteractionContext>
     {
         public InteractionService? Commands { get; set; }
@@ -22,17 +19,7 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             _context = context;
         }
 
-        [SlashCommand("удалить-объявление", "Позволяет пользователю удалить объявление")]
-        public async Task RemoveAdvertAsync()
-        {
-            _context.Posts.RemoveRange(await _context.Posts.Where(x => x.DiscordId == Context.User.Id).ToArrayAsync());
-            await _context.SaveChangesAsync();
-
-            await RespondAsync($"Объявление успешно удалено! ", ephemeral: true);
-        }
-
-        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
-        [RequireOwner(Group = "Permission")]
+        [RequireRole(roleName: "admin")]
         [SlashCommand("удалить-объявление-пользователя", "Позволяет администратору удалить объявление по id пользователя")]
         public async Task RemoveAdvertByAdminAsync([Summary(name: "id_пользователя")] string userId, [Summary(name: "причина")] string reason)
         {

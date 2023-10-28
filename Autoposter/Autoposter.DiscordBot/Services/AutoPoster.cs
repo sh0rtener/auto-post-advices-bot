@@ -72,7 +72,7 @@ namespace Autoposter.DiscordBot.Services
 
             ButtonBuilder acceptButton = new ButtonBuilder()
             {
-                Label = "Написать сообщение",
+                Label = "Написать продавцу",
                 Style = ButtonStyle.Link,
                 Url = "discord://-/users/" + post.DiscordId
             };

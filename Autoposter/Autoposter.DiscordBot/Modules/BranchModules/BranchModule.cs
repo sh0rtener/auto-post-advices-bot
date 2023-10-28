@@ -29,7 +29,6 @@ namespace Autoposter.DiscordBot.Modules.BranchModules
                 .ToList();
 
             SocketGuildChannel? channel = channels.FirstOrDefault(x => x.Name == branchName);
-            List<ulong> botRoles = await _context.BotRoles.Select(x => x.RoleId).ToListAsync();
 
             if (channel is null)
             {
@@ -39,9 +38,6 @@ namespace Autoposter.DiscordBot.Modules.BranchModules
 
             Branch branch = new Branch() { Id = Guid.NewGuid(), BranchId = channel.Id, Name = branchName };
             await _context.Branches.AddAsync(branch);
-
-            foreach (ulong roleId in botRoles)
-                await _context.BranchesRoles.AddAsync(new BranchesRoles() { Id = Guid.NewGuid(), Branch = branch, RoleId = roleId });
 
             await _context.SaveChangesAsync();
             await RespondAsync($"Ветвь успешно добавлена!", ephemeral: true);
