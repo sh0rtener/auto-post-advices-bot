@@ -44,9 +44,9 @@ namespace Autoposter.BusinessLayer.Realizations
 
             if (postOld is not null)
             {
-                if ((DateTime.UtcNow - postOld.CreatedAt).Minutes <= time)
+                if ((DateTime.UtcNow - postOld.CreatedAt).Minutes <= 60)
                 {
-                    return (int)time - (DateTime.UtcNow - postOld.CreatedAt).Minutes;
+                    return (int)60 - (DateTime.UtcNow - postOld.CreatedAt).Minutes;
                 }
             }
 

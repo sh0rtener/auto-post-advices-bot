@@ -27,7 +27,7 @@ namespace Autoposter.BusinessLayer.Realizations
 
         public async Task<DatabaseResult> AddBranchAsync(Branch branch)
         {
-            if (await _context.Branches.FirstOrDefaultAsync(x => x.Name == branch.Name) is null) return DatabaseResult.Conflict;
+            if (await _context.Branches.FirstOrDefaultAsync(x => x.Name == branch.Name) is not null) return DatabaseResult.Conflict;
 
             await _context.Branches.AddAsync(branch);
             await _context.SaveChangesAsync();

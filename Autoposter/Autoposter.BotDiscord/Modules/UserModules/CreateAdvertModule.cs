@@ -7,6 +7,7 @@ using Autoposter.BusinessLayer.Models;
 using Autoposter.DomainLayer.Entities.Autoposter;
 using Discord;
 using Discord.Interactions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Autoposter.BotDiscord.Modules.UserModules
@@ -21,13 +22,15 @@ namespace Autoposter.BotDiscord.Modules.UserModules
         private IServerService _serverService;
         private AppDbContext _context;
         private ILogger<CreateAdvertModule> _logger;
+        private IConfiguration _configuration;
 
         public CreateAdvertModule(InteractionHandler handler, AppDbContext context,
             IPostService postService, 
             IBranchService branchService,
             IBotSettingsService botSettingsService,
             IServerService serverService,
-            ILogger<CreateAdvertModule> logger)
+            ILogger<CreateAdvertModule> logger,
+            IConfiguration configuration)
         {
             _context = context;
             _handler = handler;
@@ -36,6 +39,7 @@ namespace Autoposter.BotDiscord.Modules.UserModules
             _botSettingsService = botSettingsService;
             _serverService = serverService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         [RequireBotRoles]
@@ -122,7 +126,8 @@ namespace Autoposter.BotDiscord.Modules.UserModules
             var servers = await _serverService.GetServers(Context.User.MutualGuilds.FirstOrDefault()!.Id);
             Server? server = servers.FirstOrDefault(x => x.Id == Guid.Parse(post!.ServerId!));
 
-            Embed embed = EmbedFactory.GetGeneralEmbed(new EmbedModel { Post = post, User = Context.User, Server = server!, GuildId = Context.User.MutualGuilds.FirstOrDefault()!.Id });
+            Embed embed = EmbedFactory.GetGeneralEmbed(new EmbedModel { Post = post, User = Context.User, Server = server!,
+                GuildId = Context.User.MutualGuilds.FirstOrDefault()!.Id, AutoposterId = ulong.Parse(_configuration["DiscordBot:WikiAutoPosterId"]!) });
             await Context.User.SendMessageAsync(text: $"Вы добавили обьявление на наш сервер. **Превью**", embed: embed);
             await RespondAsync($"Обьявление успешно добавлено! ", ephemeral: true);
             _logger.LogInformation($"(post-create) The user create the post. (user_id: {Context.User.Id}, post_name: {post.Name})");
@@ -165,7 +170,9 @@ namespace Autoposter.BotDiscord.Modules.UserModules
             Server? server = servers.FirstOrDefault(x => x.Id == Guid.Parse(post!.ServerId!));
 
             Embed embed = EmbedFactory.GetGeneralEmbed(
-                    new EmbedModel { Post = post, User = Context.User, Server = server!, GuildId = Context.User.MutualGuilds.FirstOrDefault()!.Id });
+                    new EmbedModel { Post = post, User = Context.User, Server = server!, GuildId = Context.User.MutualGuilds.FirstOrDefault()!.Id,
+                        AutoposterId = ulong.Parse(_configuration["DiscordBot:WikiAutoPosterId"]!)
+                    });
 
             if (post.BranchId is null) return;
             var channel = Context.Client.GetChannel(ulong.Parse(post.BranchId!)) as IMessageChannel;

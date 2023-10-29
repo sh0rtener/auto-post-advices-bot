@@ -14,14 +14,15 @@ namespace Autoposter.BotDiscord.Attributes
             var user = (SocketUser)await context.Client.GetUserAsync(context.User.Id);
             var guilds = user.MutualGuilds.FirstOrDefault();
             var userRoles = guilds!.Users.FirstOrDefault(x => x.Id == user.Id)!.Roles.ToList();
-            var adminRoles = context.Guild.Roles.Where(x => x.Permissions.Administrator).Select(x => x.Id);
+            var adminRoles = guilds.Roles.Where(x => x.Permissions.Administrator == true).Select(x => x.Id).ToList();
 
             bool haveRole = adminRoles.Intersect(userRoles.Select(x => x.Id)).Count() < 1;
 
-            if (!haveRole)
+            if (haveRole)
             {
-                await context.Interaction.RespondAsync("У вас нет доступа");
-                return PreconditionResult.FromError($"The user {user.Username}(id: {user.Id}) doesn't have" +
+                await context.Interaction.RespondAsync("У вас нет доступа", ephemeral: true);
+                //return PreconditionResult.FromSuccess();
+                 return PreconditionResult.FromError($"The user {user.Username}(id: {user.Id}) doesn't have" +
                     $"permission to use admin commands");
             }
 

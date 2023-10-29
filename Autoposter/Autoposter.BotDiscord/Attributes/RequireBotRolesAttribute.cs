@@ -23,7 +23,8 @@ namespace Autoposter.BotDiscord.Attributes
 
             if (notInRole)
             {
-                await context.Interaction.RespondAsync("У вас нет доступа");
+                await context.Interaction.RespondAsync("У вас нет доступа", ephemeral: true);
+                // return PreconditionResult.FromSuccess();
                 return PreconditionResult.FromError($"The user {user.Username}(id: {user.Id}) doesn't have" +
                     $" important roles to use the commands");
             }

@@ -6,6 +6,7 @@ using Autoposter.BusinessLayer.Models;
 using Autoposter.DomainLayer.Entities.Autoposter;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Autoposter.BotDiscord.Modules.BranchModules
@@ -48,6 +49,36 @@ namespace Autoposter.BotDiscord.Modules.BranchModules
             _logger.LogInformation($"The admin(id: {Context.User.Id}) add a branch with name {branchName}");
 
             await RespondAsync($"Ветвь успешно добавлена!", ephemeral: true);
+        }
+
+
+        [RequireAdminRoles]
+        [SlashCommand("удалить-ветвь", "Позволяет администратору удалить новую ветвь для постинга")]
+        public async Task RemoveBranchAsync([Summary(name: "имя_ветки")] string branchName)
+        {
+            List<SocketGuildChannel> channels = Context.Guild.Channels
+                .Where(x => (x is SocketTextChannel && !(x is SocketVoiceChannel)) && x.Guild.Id == Context.Guild.Id)
+                .ToList();
+
+            SocketGuildChannel? channel = channels.FirstOrDefault(x => x.Name == branchName && x.Guild.Id == Context.Guild.Id);
+
+            if (channel is null)
+            {
+                await RespondAsync($"Ошибка! такой ветви не существует", ephemeral: true);
+                return;
+            }
+
+            Branch? branch = await _context.Branches.FirstOrDefaultAsync(x => x.Name == branchName && x.GuildId == Context.Guild.Id);
+            if (branch is null)
+            {
+                await RespondAsync($"Ошибка! Ветка не была добавлена в бота", ephemeral: true);
+                return;
+            }
+            _context.Branches.Remove(branch);
+
+            _logger.LogInformation($"The admin(id: {Context.User.Id}) remove a branch with name {branchName}");
+
+            await RespondAsync($"Ветвь успешно удалена!", ephemeral: true);
         }
 
         [RequireAdminRoles]

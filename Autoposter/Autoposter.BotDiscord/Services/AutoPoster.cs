@@ -13,22 +13,18 @@ namespace Autoposter.BotDiscord.Services
     {
         private AppDbContext _context;
         private DiscordSocketClient _client;
-        private IConfiguration? _configuration;
+        private IConfiguration _configuration;
         private ILogger<AutoPoster> _logger;
-        public AutoPoster(AppDbContext context, DiscordSocketClient client, ILogger<AutoPoster> logger)
+        public AutoPoster(AppDbContext context, DiscordSocketClient client, ILogger<AutoPoster> logger, IConfiguration configuration)
         {
             _context = context;
             _client = client;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task StartPosting()
         {
-            _configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-
             await _context.Posts.ExecuteUpdateAsync(x => x.SetProperty(date => date.LastUpdateAt,
                 date => DateTime.UtcNow));
 
@@ -104,7 +100,8 @@ namespace Autoposter.BotDiscord.Services
                 Post = post,
                 User = user,
                 Server = server!,
-                GuildId = user.MutualGuilds.FirstOrDefault()!.Id
+                GuildId = user.MutualGuilds.FirstOrDefault()!.Id,
+                AutoposterId = ulong.Parse(_configuration["DiscordBot:WikiAutoPosterId"]!)
             };
 
             return embedModel;
