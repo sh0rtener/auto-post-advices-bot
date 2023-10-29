@@ -3,7 +3,7 @@ using Discord;
 
 namespace Autoposter.BusinessLayer.Models
 {
-    public class CreateAdviceModel : IModal
+    public class CreateAdvertModel : IModal
     {
         public string Title => "Ваше обьявление";
         [InputLabel("Ваш игровой ник")]
