@@ -61,9 +61,6 @@ builder.ConfigureServices((context, services) =>
     services.AddScoped<RequireBotRolesAttribute>();
 });
 
-
-//var logger = LogManager.Setup().LoadConfigurationFromSection(configuration).GetCurrentClassLogger();
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -103,8 +100,6 @@ using (var scope = app.Services.CreateScope())
         }
         else
             await commands.RegisterCommandsGloballyAsync(true);
-
-        Console.WriteLine($"Connected as -> [{client.CurrentUser}] :)");
     }
 }
 
