@@ -6,15 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Autoposter.BotDiscord.Attributes
 {
-    public class RequireAdminRoles : PreconditionAttribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class RequireAdminRolesAttribute : PreconditionAttribute
     {
-        private readonly AppDbContext _dbContext = null!;
-        public RequireAdminRoles() { }
-        public RequireAdminRoles(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {
             var user = (SocketUser)await context.Client.GetUserAsync(context.User.Id);
@@ -26,7 +20,7 @@ namespace Autoposter.BotDiscord.Attributes
 
             if (!haveRole)
             {
-                await context.User.SendMessageAsync("У вас нет доступа");
+                await context.Interaction.RespondAsync("У вас нет доступа");
                 return PreconditionResult.FromError($"The user {user.Username}(id: {user.Id}) doesn't have" +
                     $"permission to use admin commands");
             }

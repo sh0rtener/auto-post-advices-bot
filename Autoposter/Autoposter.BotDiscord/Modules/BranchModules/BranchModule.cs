@@ -1,26 +1,32 @@
 ﻿using Autoposter.BotDiscord.Attributes;
 using Autoposter.BotDiscord.Services;
 using Autoposter.BusinessLayer.Contracts;
+using Autoposter.BusinessLayer.Data.EntityFramework;
 using Autoposter.BusinessLayer.Models;
 using Autoposter.DomainLayer.Entities.Autoposter;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 
 namespace Autoposter.BotDiscord.Modules.BranchModules
 {
-    [RequireAdminRoles]
     public class BranchModule : InteractionModuleBase<SocketInteractionContext>
     {
         public InteractionService? Commands { get; set; }
         private InteractionHandler _handler;
         private IBranchService _branchService;
+        private AppDbContext _context;
+        private ILogger<BranchModule> _logger;
 
-        public BranchModule(InteractionHandler handler, IBranchService branchService)
+        public BranchModule(InteractionHandler handler, IBranchService branchService, AppDbContext context, ILogger<BranchModule> logger)
         {
             _handler = handler;
             _branchService = branchService;
+            _context = context;
+            _logger = logger;
         }
 
+        [RequireAdminRoles]
         [SlashCommand("добавить-ветвь", "Позволяет администратору добавить новую ветвь для постинга")]
         public async Task MakeNewBranchAsync([Summary(name: "имя_ветки")] string branchName)
         {
@@ -39,9 +45,12 @@ namespace Autoposter.BotDiscord.Modules.BranchModules
             Branch branch = new Branch() { Id = Guid.NewGuid(), BranchId = channel.Id, Name = branchName, GuildId = Context.Guild.Id };
             await _branchService.AddBranchAsync(branch);
 
+            _logger.LogInformation($"The admin(id: {Context.User.Id}) add a branch with name {branchName}");
+
             await RespondAsync($"Ветвь успешно добавлена!", ephemeral: true);
         }
 
+        [RequireAdminRoles]
         [SlashCommand("добавить-привязку", "Добавить привязку к текстовому каналу.")]
         public async Task AddChannelBindingAsync([Summary("роль")] string roleName, [Summary("ветка")] string branchName)
         {
@@ -77,9 +86,12 @@ namespace Autoposter.BotDiscord.Modules.BranchModules
                 return;
             }
 
+            _logger.LogInformation($"The admin(id: {Context.User.Id}) add a bind to branch with name {branchName} and role {roleName}");
+
             await RespondAsync($"Привязка успешно добавлена!", ephemeral: true);
         }
 
+        [RequireAdminRoles]
         [SlashCommand("удалить-привязку", "Удалить привязку к текстовому каналу.")]
         public async Task RemoveChannelBindingAsync([Summary("роль")] string roleName, [Summary("ветка")] string branchName)
         {
@@ -95,6 +107,8 @@ namespace Autoposter.BotDiscord.Modules.BranchModules
                 await RespondAsync($"Ошибка! Данной привязки не существует", ephemeral: true);
                 return;
             }
+
+            _logger.LogInformation($"The admin(id: {Context.User.Id}) remove a bind to branch with name {branchName} and role {roleName}");
 
             await RespondAsync($"Привязка успешно удалена!", ephemeral: true);
         }

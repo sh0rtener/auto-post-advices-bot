@@ -4,30 +4,26 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Autoposter.BotDiscord.Attributes
 {
-    public class RequireBotRoles : PreconditionAttribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class RequireBotRolesAttribute : PreconditionAttribute
     {
-        private readonly AppDbContext _dbContext = null!;
-        public RequireBotRoles() { }
-        public RequireBotRoles(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {
+            AppDbContext dbContext = services.GetRequiredService<AppDbContext>();
             var user = (SocketUser)await context.Client.GetUserAsync(context.User.Id);
             var guilds = user.MutualGuilds.FirstOrDefault();
             var userRoles = guilds!.Users.FirstOrDefault(x => x.Id == user.Id)!.Roles.ToList();
 
-            List<BotRole> roles = await _dbContext.BotRoles.ToListAsync();
-            bool haveRole = roles.Select(x => x.RoleId).Intersect(userRoles.Select(x => x.Id)).Count() < 1;
+            List<BotRole> roles = await dbContext.BotRoles.ToListAsync();
+            bool notInRole = roles.Select(x => x.RoleId).Intersect(userRoles.Select(x => x.Id)).Count() < 1;
 
-            if (!haveRole)
+            if (notInRole)
             {
-                await context.User.SendMessageAsync("У вас нет доступа");
+                await context.Interaction.RespondAsync("У вас нет доступа");
                 return PreconditionResult.FromError($"The user {user.Username}(id: {user.Id}) doesn't have" +
                     $" important roles to use the commands");
             }

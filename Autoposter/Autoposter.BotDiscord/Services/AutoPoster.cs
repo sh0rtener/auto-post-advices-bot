@@ -4,6 +4,8 @@ using Discord.WebSocket;
 using Discord;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Autoposter.BotDiscord.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Autoposter.BotDiscord.Services
 {
@@ -12,10 +14,12 @@ namespace Autoposter.BotDiscord.Services
         private AppDbContext _context;
         private DiscordSocketClient _client;
         private IConfiguration? _configuration;
-        public AutoPoster(AppDbContext context, DiscordSocketClient client)
+        private ILogger<AutoPoster> _logger;
+        public AutoPoster(AppDbContext context, DiscordSocketClient client, ILogger<AutoPoster> logger)
         {
             _context = context;
             _client = client;
+            _logger = logger;
         }
 
         public async Task StartPosting()
@@ -28,7 +32,7 @@ namespace Autoposter.BotDiscord.Services
             await _context.Posts.ExecuteUpdateAsync(x => x.SetProperty(date => date.LastUpdateAt,
                 date => DateTime.UtcNow));
 
-            Console.WriteLine("start parsing");
+            _logger.LogInformation("Autoposter starting to post");
             while (true)
             {
                 await OnTimerElapsed();
@@ -60,9 +64,11 @@ namespace Autoposter.BotDiscord.Services
                 if ((DateTime.UtcNow - post.LastUpdateAt).TotalMinutes <= interval) continue;
                 else
                 {
-                    var embed = await GetEmbed(post);
+                    var embed = EmbedFactory.GetGeneralEmbed(await GetEmbedModelAsync(post));
 
                     await DoWork(embed, post);
+
+                    _logger.LogInformation($"Autopost succesfully posted a post; (post_name: {post.Name}, user_id: {post.DiscordId})");
 
                     await Task.Delay(200);
                 }
@@ -85,39 +91,23 @@ namespace Autoposter.BotDiscord.Services
             await _context!.SaveChangesAsync();
         }
 
-        private async Task<Embed> GetEmbed(Post post)
+        private async Task<EmbedModel> GetEmbedModelAsync(Post post)
         {
             Guid serverId;
             Server? server = await _context!.Servers.FirstOrDefaultAsync();
             if (Guid.TryParse(post.ServerId!, out serverId))
                 server = await _context!.Servers.FirstOrDefaultAsync(x => x.Id == serverId);
-            string autoposterId = _configuration!["DiscordBot:WikiAutoPosterId"] ?? post.BranchId!;
-            Uri branchUri = new Uri($"https://discord.com/channels/{_configuration!["DiscordBot:GuildsId"]}/" + autoposterId);
+            var user = (SocketUser)await _client.GetUserAsync(post.DiscordId);
 
-            _client!.Guilds.FirstOrDefault(x => x.Id == post.DiscordId);
-            var user = await _client.GetUserAsync(post.DiscordId);
-
-            var embed = new EmbedBuilder
+            EmbedModel embedModel = new EmbedModel
             {
-                //Title = $"{post.Name} предлагает свой аккаунт!",
-                Author = new EmbedAuthorBuilder()
-                {
-                    IconUrl = user.GetAvatarUrl(),
-                    Name = user.Username,
-                },
-                ThumbnailUrl = user.GetAvatarUrl(),
-                Url = "https://discord.com/users/" + post.DiscordId,
-                Color = 0x0099FF,
-                Description = $"Ник: {post.Name}\nСервер: {server!.Name}\n\n" +
-                            $"Объявление торговца:\n {post.Description}\n\nАктивировать услугу: \n{branchUri}" +
-                            $"\n\nНаписать торговцу:\n {user.Mention}\n" +
-                            $"Тег текстом:\n {user.Username}"
+                Post = post,
+                User = user,
+                Server = server!,
+                GuildId = user.MutualGuilds.FirstOrDefault()!.Id
             };
 
-            embed
-                .WithImageUrl(post.ImageUri);
-
-            return embed.Build();
+            return embedModel;
         }
     }
 }

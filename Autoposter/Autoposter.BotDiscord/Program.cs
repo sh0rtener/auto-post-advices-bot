@@ -1,4 +1,5 @@
-﻿using Autoposter.BotDiscord.Services;
+﻿using Autoposter.BotDiscord.Attributes;
+using Autoposter.BotDiscord.Services;
 using Autoposter.BusinessLayer.Contracts;
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Autoposter.BusinessLayer.Realizations;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Hosting;
 using NLog.Extensions.Logging;
 
 var builder = Host.CreateDefaultBuilder(args);
@@ -20,7 +22,15 @@ IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
 
 IConfiguration configuration = configurationBuilder.Build();
 
+
 builder.ConfigureHostConfiguration(config => { config = configurationBuilder; });
+
+builder.ConfigureLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConfiguration(configuration);
+    logging.AddNLog().AddFilter("Microsoft", LogLevel.Warning);
+}).UseNLog();
 
 builder.ConfigureServices((context, services) =>
 {
@@ -40,17 +50,19 @@ builder.ConfigureServices((context, services) =>
     services.AddSingleton<DiscordSocketClient>();
     services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
     services.AddSingleton<InteractionHandler>();
-    services.AddTransient<DiscordLogger>();
-    services.AddTransient<IPostService, PostService>();
+    services.AddTransient<NLogDiscordLogger>();
+    services.AddScoped<IPostService, PostService>();
+    services.AddScoped<IServerService, ServerService>();
+    services.AddScoped<IBranchService, BranchService>();
+    services.AddScoped<IBotSettingsService, BotSettingsService>();
+    services.AddScoped<IBranchService, BranchService>();
     services.AddSingleton<AutoPoster>();
-
+    services.AddScoped<RequireAdminRolesAttribute>();
+    services.AddScoped<RequireBotRolesAttribute>();
 });
 
-builder.ConfigureLogging(logging =>
-{
-    logging.ClearProviders();
-    logging.AddNLog();
-});
+
+//var logger = LogManager.Setup().LoadConfigurationFromSection(configuration).GetCurrentClassLogger();
 
 var app = builder.Build();
 
@@ -60,7 +72,6 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
 }
 
-app.Run();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -69,8 +80,8 @@ using (var scope = app.Services.CreateScope())
     var commands = scope.ServiceProvider.GetRequiredService<InteractionService>();
     var poster = scope.ServiceProvider.GetRequiredService<AutoPoster>();
 
-    client.Log += _ => scope.ServiceProvider.GetRequiredService<DiscordLogger>().Log(_);
-    commands.Log += _ => scope.ServiceProvider.GetRequiredService<DiscordLogger>().Log(_);
+    client.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
+    commands.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
     client.Ready += ReadyAsync;
 
     await client.LoginAsync(TokenType.Bot, configuration["DiscordBot:Token"]);
@@ -96,6 +107,9 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Connected as -> [{client.CurrentUser}] :)");
     }
 }
+
+app.Run();
+
 
 bool IsDebug()
 {

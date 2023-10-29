@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Autoposter.BotDiscord.Services
 {
-    public class DiscordLogger
+    public class NLogDiscordLogger
     {
         private Dictionary<LogSeverity, Action<string>> _loggerCommands = new Dictionary<LogSeverity, Action<string>>();
-        private readonly ILogger _logger;
-        public DiscordLogger(ILogger<DiscordLogger> logger)
+        private readonly ILogger<NLogDiscordLogger> _logger;
+        public NLogDiscordLogger(ILogger<NLogDiscordLogger> logger)
         {
             _logger = logger;
             _loggerCommands.Add(LogSeverity.Critical, (message) => { _logger.LogCritical(message); });

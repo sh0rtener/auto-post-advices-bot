@@ -10,7 +10,7 @@ namespace Autoposter.BotDiscord.Services
     {
         public static Embed GetGeneralEmbed(EmbedModel model)
         {
-            Uri branchUri = new Uri($"https://discord.com/channels/{model.GuildId}/" + model.AutoposterId);
+            string branchUri = $"https://discord.com/channels/{model.GuildId}/" + model.AutoposterId;
             var embed = new EmbedBuilder
             {
                 Author = new EmbedAuthorBuilder()
