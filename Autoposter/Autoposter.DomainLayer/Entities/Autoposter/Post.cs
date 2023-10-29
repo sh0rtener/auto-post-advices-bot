@@ -12,5 +12,12 @@
         public DateTime LastUpdateAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+        public bool IsAvailableToPost() => BranchId is not null && ServerId is not null && ImageUri is not null;
+        public void EndingCreate(string imageUri)
+        {
+            ImageUri = imageUri;
+            LastUpdateAt = DateTime.UtcNow;
+            IsActive = true;
+        }
     }
 }

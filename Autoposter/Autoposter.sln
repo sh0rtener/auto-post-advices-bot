@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DomainLayer", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.BusinessLayer", "Autoposter.BusinessLayer\Autoposter.BusinessLayer.csproj", "{BE8DF780-2543-47D3-99AE-339EC8D203CC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DiscordBot", "Autoposter.DiscordBot\Autoposter.DiscordBot.csproj", "{298A20AD-9ED5-4776-9E88-999556BA18E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DiscordBotOld", "Autoposter.DiscordBot\Autoposter.DiscordBotOld.csproj", "{298A20AD-9ED5-4776-9E88-999556BA18E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoposter.DatabaseMigrateApp", "Autoposter.DatabaseMigrateApp\Autoposter.DatabaseMigrateApp.csproj", "{07495057-8406-4F77-BCCB-24595D6AE5B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autoposter.BotDiscord", "Autoposter.BotDiscord\Autoposter.BotDiscord.csproj", "{5AFD6B90-BE64-4303-B877-4FC5A7365E1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{07495057-8406-4F77-BCCB-24595D6AE5B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07495057-8406-4F77-BCCB-24595D6AE5B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07495057-8406-4F77-BCCB-24595D6AE5B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AFD6B90-BE64-4303-B877-4FC5A7365E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AFD6B90-BE64-4303-B877-4FC5A7365E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AFD6B90-BE64-4303-B877-4FC5A7365E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AFD6B90-BE64-4303-B877-4FC5A7365E1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

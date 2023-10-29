@@ -9,29 +9,37 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace Autoposter.DiscordBot;
 
 class Program
 {
-    private readonly IConfiguration _configuration;
     private DiscordSocketClient? _client;
     private InteractionService _commands;
     public Program()
     {
-        _configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
-
         _commands = new InteractionService(_client);
     }
 
     static void Main(string[] args) =>
         new Program().RunAsync(args).Wait();
 
-    private ServiceProvider CreateProvider()
+    private IHost CreateHost(string[] args)
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices(services => CreateProvider(configuration))
+            .ConfigureAppConfiguration((context, builder) => CreateProvider(configuration))
+            .Build();
+    }
+
+    private ServiceProvider CreateProvider(IConfiguration configuration)
     {
         ServiceCollection builder = new ServiceCollection();
 
@@ -46,7 +54,7 @@ class Program
         };
 
         builder
-            .AddSingleton(_configuration)
+            .AddSingleton(configuration)
             .AddSingleton(clientConfig)
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
@@ -54,7 +62,7 @@ class Program
             .AddTransient<DiscordLogger>()
             .AddTransient<IPostService, PostService>()
             .AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(_configuration["ConnectionStrings:Dev"],
+                options.UseNpgsql(configuration["ConnectionStrings:Dev"],
                 b => b.MigrationsAssembly("Autoposter.DiscordBot"))
                 .UseSnakeCaseNamingConvention())
             .AddTransient<DiscordRoleValidator>()

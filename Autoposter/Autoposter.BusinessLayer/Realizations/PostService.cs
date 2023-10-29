@@ -17,7 +17,7 @@ namespace Autoposter.BusinessLayer.Realizations
             _context = context;
         }
 
-        public async Task AddAsync(CreateAdviceModel model, SocketInteractionContext context, ulong guildId)
+        public async Task AddAsync(CreateAdvertModel model, SocketInteractionContext context, ulong guildId)
         {
             Post post = new Post()
             {

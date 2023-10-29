@@ -38,14 +38,13 @@ namespace Autoposter.DiscordBot.Modules.UserModules
 
         [SlashCommand("создать-объявление", "Позволяет пользователю создать объявление, которое будет автоматически поститься")]
         public async Task MakeAdviceAsync()
-            => await Context.Interaction.RespondWithModalAsync<CreateAdviceModel>("advice_model");
+            => await Context.Interaction.RespondWithModalAsync<CreateAdvertModel>("advice_model");
 
         [ModalInteraction("advice_model")]
-        public async Task MakeAdviceResponseAsync(CreateAdviceModel model)
+        public async Task MakeAdviceResponseAsync(CreateAdvertModel model)
         {
             var guilds = Context.User.MutualGuilds.FirstOrDefault()!;
-            var userRoles = guilds
-                .Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
+            var userRoles = guilds.Users.FirstOrDefault(x => x.Id == Context.User.Id)!.Roles.ToList();
 
             if (await _roleValidator.Validate(userRoles))
             {
@@ -224,7 +223,6 @@ namespace Autoposter.DiscordBot.Modules.UserModules
             await RespondAsync($"Обьявление успешно добавлено! ", ephemeral: true);
             await ShareCreatedPost(post);
         }
-
 
         [SlashCommand("удалить-объявление", "Позволяет пользователю удалить объявление")]
         public async Task RemoveAdvertAsync()

@@ -6,7 +6,7 @@ namespace Autoposter.BusinessLayer.Contracts
 {
     public interface IPostService
     {
-        Task AddAsync(CreateAdviceModel model, SocketInteractionContext context, ulong guildId);
+        Task AddAsync(CreateAdvertModel model, SocketInteractionContext context, ulong guildId);
         Task<Post> GetLastByUserAsync(string discordId, ulong guildId);
         Task<int> TimeToCreate(ulong discordId, double time, ulong guildId);
         Task UpdateAsync(Post post, ulong guildId);

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Data\EntityFramework\Configurations\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
