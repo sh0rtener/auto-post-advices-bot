@@ -28,7 +28,7 @@ namespace Autoposter.BotDiscord.Modules.ServerModules
         {
             List<Server> channels = await _context.Servers.Where(x => x.Name == serverName).ToListAsync();
 
-            Server? channel = channels.FirstOrDefault(x => x.Name == serverName);
+            Server? channel = channels.FirstOrDefault(x => x.Name == serverName && x.GuildId == Context.Guild.Id);
 
             if (channel is not null)
             {

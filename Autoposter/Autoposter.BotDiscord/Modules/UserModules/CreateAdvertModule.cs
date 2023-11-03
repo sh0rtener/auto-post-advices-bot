@@ -71,7 +71,7 @@ namespace Autoposter.BotDiscord.Modules.UserModules
         [ComponentInteraction("select-branch")]
         public async Task HandleSelectBranchAsync(string[] selections)
         {
-            Post? post = await _postService.GetLastByUserAsync(Context.User.Id.ToString(), Context.User.MutualGuilds.FirstOrDefault()!.Id);
+            Post? post = await _postService.GetLastByUserAsync(Context.User.Id, Context.User.MutualGuilds.FirstOrDefault()!.Id);
             post!.BranchId = selections.First();
             await _postService.UpdateAsync(post, Context.User.MutualGuilds.FirstOrDefault()!.Id);
 
@@ -88,7 +88,7 @@ namespace Autoposter.BotDiscord.Modules.UserModules
         [ComponentInteraction("select-server")]
         public async Task HandleSelectServerAsync(string[] selections)
         {
-            Post? post = await _postService.GetLastByUserAsync(Context.User.Id.ToString(), Context.User.MutualGuilds.FirstOrDefault()!.Id);
+            Post? post = await _postService.GetLastByUserAsync(Context.User.Id, Context.User.MutualGuilds.FirstOrDefault()!.Id);
             post!.ServerId = selections.First();
             await _postService.UpdateAsync(post, Context.User.MutualGuilds.FirstOrDefault()!.Id);
 
@@ -108,7 +108,7 @@ namespace Autoposter.BotDiscord.Modules.UserModules
         [ComponentInteraction("accept-photo")]
         public async Task HandleLoadImageAsync()
         {
-            Post? post = await _postService.GetLastByUserAsync(Context.User.Id.ToString(), Context.User.MutualGuilds.FirstOrDefault()!.Id);
+            Post? post = await _postService.GetLastByUserAsync(Context.User.Id, Context.User.MutualGuilds.FirstOrDefault()!.Id);
 
             var messages = await Context.Channel.GetMessagesAsync().FlattenAsync();
             var message = messages.First(x => x.Author.Id == Context.User.Id && x.Attachments is not null);
@@ -147,8 +147,8 @@ namespace Autoposter.BotDiscord.Modules.UserModules
 
         private async Task<bool> IsConvenientTime(CreateAdvertModel model, double interval)
         {
-            Post post = await _postService.GetLastByUserAsync(Context.User.Id.ToString(), Context.User.MutualGuilds.FirstOrDefault()!.Id);
-            double timeToCreate = await _postService.TimeToCreate(Context.User.Id, interval, Context.User.MutualGuilds.FirstOrDefault()!.Id);
+            Post post = await _postService.GetLastByUserAsync(Context.User.Id, Context.User.MutualGuilds.FirstOrDefault()!.Id);
+            double timeToCreate = await _postService.TimeToCreate(Context.User.Id, int.Parse(_configuration["DiscordBot:CreatePostTimeout"]!), Context.User.MutualGuilds.FirstOrDefault()!.Id);
 
             if (timeToCreate > 0 && post.IsAvailableToPost())
             {

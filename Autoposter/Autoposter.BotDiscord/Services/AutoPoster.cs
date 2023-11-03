@@ -39,12 +39,9 @@ namespace Autoposter.BotDiscord.Services
 
         private async Task OnTimerElapsed()
         {
-            List<Post>? posts = _context!.Posts.AsNoTracking()
+            List<Post>? posts = await _context!.Posts.AsNoTracking()
                 .OrderByDescending(x => x.LastUpdateAt)
-                .ToListAsync()
-                .GetAwaiter().GetResult();
-
-
+                .ToListAsync();
 
             foreach (Post post in posts)
             {
@@ -54,7 +51,7 @@ namespace Autoposter.BotDiscord.Services
 
                 if (interval == 0) interval = double.MaxValue;
 
-                if (post.BranchId is null && post.ServerId is null && post.ImageUri is null)
+                if (!post.IsAvailableToPost())
                     continue;
 
                 if ((DateTime.UtcNow - post.LastUpdateAt).TotalMinutes <= interval) continue;
@@ -63,8 +60,6 @@ namespace Autoposter.BotDiscord.Services
                     var embed = EmbedFactory.GetGeneralEmbed(await GetEmbedModelAsync(post));
 
                     await DoWork(embed, post);
-
-                    _logger.LogInformation($"Autopost succesfully posted a post; (post_name: {post.Name}, user_id: {post.DiscordId})");
 
                     await Task.Delay(200);
                 }
@@ -85,6 +80,8 @@ namespace Autoposter.BotDiscord.Services
 
             _context.Entry(oldPost!).CurrentValues.SetValues(post);
             await _context!.SaveChangesAsync();
+
+            _logger.LogInformation($"Autopost succesfully posted a post; (post_name: {post.Name}, user_id: {post.DiscordId})");
         }
 
         private async Task<EmbedModel> GetEmbedModelAsync(Post post)

@@ -33,9 +33,9 @@ namespace Autoposter.BotDiscord.Modules.BotModules
             await _botSettingsService.ChangeIntervalAsync(botSettings, interval);
 
             _logger.LogInformation($"The admin(id: {Context.User.Id}, guild_id: {Context.User.MutualGuilds.FirstOrDefault()!.Id})" +
-                $" change the inverval from {botSettings.Interval} to {interval}");
+                $" change the inverval  to {interval}");
 
-            await RespondAsync($"Интервал успешно сменен с {botSettings.Interval} минут на {interval}", ephemeral: true);
+            await RespondAsync($"Интервал успешно сменен на {interval}", ephemeral: true);
         }
 
         [RequireAdminRoles]

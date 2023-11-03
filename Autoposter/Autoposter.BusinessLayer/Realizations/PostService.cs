@@ -2,7 +2,6 @@
 using Autoposter.BusinessLayer.Data.EntityFramework;
 using Autoposter.BusinessLayer.Models;
 using Autoposter.DomainLayer.Entities.Autoposter;
-using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,22 +41,22 @@ namespace Autoposter.BusinessLayer.Realizations
                 .OrderByDescending(x => x.LastUpdateAt)
                 .FirstOrDefaultAsync(x => x.DiscordId == discordId && x.GuildId == guildId);
 
-            if (postOld is not null)
+            if (postOld is not null && postOld.IsAvailableToPost())
             {
-                if ((DateTime.UtcNow - postOld.CreatedAt).Minutes <= 60)
+                if ((DateTime.UtcNow - postOld.CreatedAt).Minutes <= time)
                 {
-                    return (int)60 - (DateTime.UtcNow - postOld.CreatedAt).Minutes;
+                    return (int)time - (DateTime.UtcNow - postOld.CreatedAt).Minutes;
                 }
             }
 
             return -1;
         }
 
-        public async Task<Post> GetLastByUserAsync(string discordId, ulong guildId)
+        public async Task<Post> GetLastByUserAsync(ulong discordId, ulong guildId)
         {
             Post? post = await _context.Posts
                 .OrderByDescending(x => x.LastUpdateAt)
-                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(discordId) && x.GuildId == guildId);
+                .FirstOrDefaultAsync(x => x.DiscordId == discordId && x.GuildId == guildId);
 
             return post!;
         }
