@@ -72,35 +72,42 @@ using (var scope = app.Services.CreateScope())
 
 using (var scope = app.Services.CreateScope())
 {
-
-    var client = scope.ServiceProvider.GetRequiredService<DiscordSocketClient>();
-    var commands = scope.ServiceProvider.GetRequiredService<InteractionService>();
-    var poster = scope.ServiceProvider.GetRequiredService<AutoPoster>();
-
-    client.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
-    commands.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
-    client.Ready += ReadyAsync;
-
-    await client.LoginAsync(TokenType.Bot, configuration["DiscordBot:Token"]);
-    await client.StartAsync();
-
-    await scope.ServiceProvider.GetRequiredService<InteractionHandler>()
-        .InitializeAsync();
-
-    await Task.Delay(2000);
-    await poster.StartPosting();
-    await Task.Delay(-1);
-
-    async Task ReadyAsync()
+    try
     {
-        if (IsDebug())
+        var client = scope.ServiceProvider.GetRequiredService<DiscordSocketClient>();
+        var commands = scope.ServiceProvider.GetRequiredService<InteractionService>();
+        var poster = scope.ServiceProvider.GetRequiredService<AutoPoster>();
+
+        client.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
+        commands.Log += _ => scope.ServiceProvider.GetRequiredService<NLogDiscordLogger>().Log(_);
+        client.Ready += ReadyAsync;
+
+        await client.LoginAsync(TokenType.Bot, configuration["DiscordBot:Token"]);
+        await client.StartAsync();
+
+        await scope.ServiceProvider.GetRequiredService<InteractionHandler>()
+            .InitializeAsync();
+
+        await Task.Delay(2000);
+        await poster.StartPosting();
+        await Task.Delay(-1);
+
+        async Task ReadyAsync()
         {
-            Console.WriteLine($"In debug mode, adding commands to guild id...");
-            await commands.RegisterCommandsToGuildAsync(ulong.Parse(configuration["DiscordBot:GuildsId"]!));
+            if (IsDebug())
+            {
+                Console.WriteLine($"In debug mode, adding commands to guild id...");
+                await commands.RegisterCommandsToGuildAsync(ulong.Parse(configuration["DiscordBot:GuildsId"]!));
+            }
+            else
+                await commands.RegisterCommandsGloballyAsync(true);
         }
-        else
-            await commands.RegisterCommandsGloballyAsync(true);
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.ToString());
+    }
+    
 }
 
 app.Run();

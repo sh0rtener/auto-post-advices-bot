@@ -37,13 +37,21 @@ namespace Autoposter.BotDiscord.Modules.UserModules
         [SlashCommand("удалить-объявление-пользователя", "Позволяет администратору удалить объявление по id пользователя")]
         public async Task RemoveAdvertByAdminAsync([Summary(name: "id_пользователя")] string userId, [Summary(name: "причина")] string reason)
         {
-            await _postService.RemoveAllByUserId(Context.User.Id, Context.Guild.Id);
+            userId = ParseUserId(userId);
+            await _postService.RemoveAllByUserId(ulong.Parse(userId), Context.Guild.Id);
             await RespondAsync($"Объявление успешно удалено! ", ephemeral: true);
 
             SocketGuildUser user = Context.Guild.GetUser(ulong.Parse(userId));
             _logger.LogInformation($"Post succesfully removed by admin! (user_id: {userId}, " +
                 $"guild_id: {Context.User.MutualGuilds.FirstOrDefault()!.Id}), reason: {reason}");
-            await UserExtensions.SendMessageAsync(user, text: $"Ваше объявление было снято администратором. Причина: {reason}");
+            if (user is not null)
+                await UserExtensions.SendMessageAsync(user, text: $"Ваше объявление было снято администратором. Причина: {reason}");
+        }
+
+        private string ParseUserId(string rawUserId)
+        {
+            string result = rawUserId.Replace("@", "").Replace("<", "").Replace(">", "");
+            return result;
         }
     }
 }

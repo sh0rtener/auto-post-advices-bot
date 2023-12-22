@@ -90,14 +90,14 @@ namespace Autoposter.BotDiscord.Services
             Server? server = await _context!.Servers.FirstOrDefaultAsync();
             if (Guid.TryParse(post.ServerId!, out serverId))
                 server = await _context!.Servers.FirstOrDefaultAsync(x => x.Id == serverId);
-            var user = (SocketUser)await _client.GetUserAsync(post.DiscordId);
+            var user = await _client.GetUserAsync(post.DiscordId);
 
             EmbedModel embedModel = new EmbedModel
             {
                 Post = post,
                 User = user,
                 Server = server!,
-                GuildId = user.MutualGuilds.FirstOrDefault()!.Id,
+                GuildId = ulong.Parse(_configuration["DiscordBot:GuildsId"]!),
                 AutoposterId = ulong.Parse(_configuration["DiscordBot:WikiAutoPosterId"]!)
             };
 

@@ -19,7 +19,8 @@ namespace Autoposter.BotDiscord.Services
         }
         public Task Log(LogMessage message)
         {
-            _loggerCommands[message.Severity](message.Message);
+            string logMessage = string.Format("({0}) ({1}) {2} \n \t[Additional] {3} \n---", message.Source, message.Severity, message.Message, message.Exception);
+            _loggerCommands[message.Severity](logMessage);
             return Task.CompletedTask;
         }
     }
